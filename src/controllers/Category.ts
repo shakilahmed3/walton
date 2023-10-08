@@ -153,3 +153,69 @@ export const deactivateCategoryById = async (req: Request, res: Response, next: 
         return next(createError(error))
     }
 };
+
+
+export const searchCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const categoryName = req.params.name;
+
+        const foundCategory = await Category.findOne({ name: categoryName, isActive: true });
+
+        if (!foundCategory) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
+
+        let parentCategory = null;
+
+        if (foundCategory.parent) {
+            parentCategory = await Category.findOne({ _id: foundCategory.parent, isActive: true });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Successfully search complete",
+            data: {
+                _id: foundCategory._id,
+                name: foundCategory.name,
+                parent: parentCategory,
+                isActive: foundCategory.isActive,
+            },
+        });
+    } catch (error) {
+        return next(createError(error))
+    }
+};
+
+
+export const getAllChildCategories = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const categoryId = req.params.id;
+        const childCategories = await getAllChildCategoriesRecursive(categoryId);
+
+        res.status(200).json({
+            success: true,
+            data: childCategories,
+            message: "Successfully retrieved all child categories",
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+async function getAllChildCategoriesRecursive(categoryId: any): Promise<any[]> {
+    const childCategories = await Category.find({ parent: categoryId });
+
+    if (childCategories.length === 0) {
+        return [];
+    }
+
+    let allChildCategories: any[] = [];
+
+    for (const child of childCategories) {
+        allChildCategories.push(child);
+        const nestedChildCategories = await getAllChildCategoriesRecursive(child._id);
+        allChildCategories = allChildCategories.concat(nestedChildCategories);
+    }
+
+    return allChildCategories;
+}

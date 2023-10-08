@@ -2,13 +2,14 @@ import {
     createCategory,
     deactivateCategoryById,
     getAllCategory,
+    getAllChildCategories,
     getCategoryById,
+    searchCategory,
     updateCategoryById
 } from "../controllers/Category";
 
 const express = require('express');
 const router = express.Router();
-
 
 //get all category
 router.get('/', getAllCategory);
@@ -20,6 +21,10 @@ router.get('/:id', getCategoryById);
 router.put('/:id', updateCategoryById);
 // Delete a category by ID
 router.delete('/:id', deactivateCategoryById);
+router.get('/search/:name', searchCategory);
+router.get('/:id/children', getAllChildCategories);
+
+
 
 module.exports = router;
 
