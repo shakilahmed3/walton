@@ -1,0 +1,4 @@
+{
+    "SERVER_PORT": 4000,
+    "REDIS_URL": "redis://redis"
+}

@@ -1,0 +1,43 @@
+components:
+  responses:
+    OK:
+      description: Request successful
+    Created:
+      description: Resource created successfully
+    BadRequest:
+      description: Bad request - the request is invalid
+    Unauthorized:
+      description: Unauthorized - authentication required
+    Forbidden:
+      description: Forbidden - authenticated user does not have permission
+    NotFound:
+      description: Not found - resource not found
+    Conflict:
+      description: Conflict - resource state conflicts with request
+    InternalServerError:
+      description: Internal server error - something went wrong on the server
+paths:
+  /Category:
+    get:
+      tags:
+        - Category
+      summary: Category
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          $ref: "#/components/responses/OK"
+        201:
+          $ref: "#/components/responses/Created"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        500:
+          $ref: "#/components/responses/InternalServerError"
