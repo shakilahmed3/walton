@@ -36,8 +36,8 @@ const bootstrapApp = async () => {
 
         //Server error handleing..
         app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-            console.error(err.message);
-            return res.status(500).json({
+            // console.error(err.status);
+            return res.status(err.status).json({
                 success: false,
                 message: err.message,
                 data: err

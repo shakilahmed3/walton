@@ -1,6 +1,7 @@
-import { Express } from 'express';
+import { Application, Router } from 'express';
 
-module.exports.setupRoutes = async function (app: Express) {
-    const categoryRoutes = require('./routers/Category')
-    app.use('/api/category', categoryRoutes)
+module.exports.setupRoutes = async function (app: Application) {
+    const categoryRoutes: Router = require('./routers/Category');
+
+    app.use('/api/categories', categoryRoutes);
 };
