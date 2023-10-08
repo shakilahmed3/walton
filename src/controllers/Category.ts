@@ -219,3 +219,44 @@ async function getAllChildCategoriesRecursive(categoryId: any): Promise<any[]> {
 
     return allChildCategories;
 }
+
+
+
+// for up to 4 level categories nesting
+// export const createCategory = async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//         // ... (other validation and checks)
+
+//         const parentCategory = parentId
+//             ? await Category.findById(parentId)
+//             : null;
+
+//         if (parentCategory) {
+//             // Check the nesting level of the parent category
+//             const parentNestingLevel = parentCategory.nestingLevel || 0;
+
+//             if (parentNestingLevel >= 4) {
+//                 return next(createError(400, 'Cannot nest categories beyond 4 levels.'));
+//             }
+//         }
+
+//         // Calculate the nesting level for the new category
+//         const nestingLevel = parentCategory ? parentNestingLevel + 1 : 0;
+
+//         const category = new Category({
+//             name,
+//             parent: parentId || null,
+//             nestingLevel,
+//         });
+
+//         await category.save();
+
+//         res.status(201).json({
+//             success: true,
+//             data: category,
+//             message: "Create categories successfully"
+//         });
+//     } catch (error) {
+//         return next(createError(error))
+//     }
+// };
