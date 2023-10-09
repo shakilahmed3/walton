@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc --project .",
     "dev": "cross-env NODE_ENV=development nodemon server.ts",
-    "production": "cross-env NODE_ENV=production dist/server.js",
-    "staging": "cross-env NODE_ENV=staging dist/server.js"
+    "production": "cross-env NODE_ENV=production node dist/server.js",
+    "staging": "cross-env NODE_ENV=staging node dist/server.js"
   },
   "keywords": [],
   "author": "Md Shakil Ahmed - Software Engineer",
