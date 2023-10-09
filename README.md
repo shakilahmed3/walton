@@ -57,14 +57,14 @@ The API provides endpoints to manage categories. It includes the following funct
     
     ***Note: Make sure before run `npm run build`
     
-    The API will be available at `http://localhost:4000`.
+    The API will be available at localhost: `http://localhost:4000` and the production: 	`https://walton-job.onrender.com`
     
 ## Usage
 
 Here's how to use the API:
 
 -   Use the provided API endpoints to manage categories.
--   Refer to the Swagger documentation for detailed information on available endpoints. You can access the Swagger documentation at `http://localhost:4000/api/docs` when the server is running locally.
+-   Refer to the Swagger documentation for detailed information on available endpoints. You can access the Swagger documentation at `http://localhost:4000/api/docs` and production: `https://walton-job.onrender.com` when the server is running locally or production.
 
 ## API Endpoints
 
