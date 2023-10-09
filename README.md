@@ -1,131 +1,88 @@
-# walton
+# Walton Job Task API Documentation
 
-# Category Management REST API
+This documentation provides an overview of  Express.js API with 
+-  NodeJS
+-   MongoDB
+-   Typescript
+-   ExpressJS
+-   REST
+-   Redis
+-   Git (for version control and code sharing)
+-   README.md file for basic deployment documentation and instructions on deploying it to Render.com.
 
-This is a REST API for managing categories with nested levels, built using Node.js, TypeScript, Express.js, and MongoDB. It allows you to create, retrieve, update, and delete categories while automatically deactivating child categories when their parent is deactivated.
+# Walton API
+
+This repository contains an Express.js API for managing categories. It includes features such as creating, retrieving, updating, and deactivating categories. This README provides an overview of the API and instructions for deployment on Render.com.
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Endpoints](#endpoints)
-  - [Create a Category](#create-a-category)
-  - [Get a Category by ID](#get-a-category-by-id)
-  - [Update a Category by ID](#update-a-category-by-id)
-  - [Delete a Category by ID](#delete-a-category-by-id)
-- [Payload Examples](#payload-examples)
-- [Setting Up](#setting-up)
-- [Running the Application](#running-the-application)
+- [API Overview](#api-overview)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Deployment on Render.com](#deployment-on-rendercom)
 
-## Getting Started
+## API Overview
 
-To get started with this REST API, you'll need Node.js, TypeScript, MongoDB, and npm (Node Package Manager) installed on your system.
+The API provides endpoints to manage categories. It includes the following functionalities:
 
-## Endpoints
+- Get all categories
+- Create a new category
+- Retrieve a category by ID
+- Update a category by ID
+- Deactivate a category by ID
+- Search for a category by name
 
-### Create a Category
+## Installation
 
-- **HTTP Method**: POST
-- **Endpoint**: \`/api/categories\`
-- **Request Payload**:
+1. Clone this repository to your local machine:
 
-\`\`\`json
-{
-  "name": "Electronics",
-  "parentId": null
-}
-\`\`\`
+   ```bash
+   git clone https://github.com/shakil1206/walton
+2.  Install the required dependencies:
+        
+    `cd walton npm install` 
+    
+3.  Configure environment variables as needed. You may need to set up environment variables for your database connection, Redis, and other settings.
+    
+4.  Start the Express.js server:
+    
+    `npm run dev` 
+    
+    If you want to build typescript project simply run:
+    `npm run build`
+    
+    If you run production or staging server then run:
+    `npm run staging` or `npm run production`
+    
+    ***Note: Make sure before run `npm run build`
+    
+    The API will be available at `http://localhost:4000`.
+    
+## Usage
 
-- **Response Payload (Success)**:
+Here's how to use the API:
 
-\`\`\`json
-{
-  "_id": "category_id",
-  "name": "Electronics",
-  "parent": null,
-  "isActive": true
-}
-\`\`\`
+-   Use the provided API endpoints to manage categories.
+-   Refer to the Swagger documentation for detailed information on available endpoints. You can access the Swagger documentation at `http://localhost:4000/api/docs` when the server is running locally.
 
-### Get a Category by ID
+## API Endpoints
 
-- **HTTP Method**: GET
-- **Endpoint**: \`/api/categories/:id\`
-- **Response Payload (Success)**:
+The API endpoints are documented using Swagger. For a detailed list of available endpoints and their descriptions, please refer to the [Swagger Documentation](https://chat.openai.com/c/4361c7a4-a970-4521-b7f0-b1bb994064ea#).
 
-\`\`\`json
-{
-  "_id": "category_id",
-  "name": "Electronics",
-  "parent": null,
-  "isActive": true
-}
-\`\`\`
+## Deployment on Render.com
 
-### Update a Category by ID
+To deploy this Express.js API on Render.com, follow these steps:
 
-- **HTTP Method**: PUT
-- **Endpoint**: \`/api/categories/:id\`
-- **Request Payload**:
-
-\`\`\`json
-{
-  "name": "New Electronics Name",
-  "isActive": false
-}
-\`\`\`
-
-- **Response Payload (Success)**:
-
-\`\`\`json
-{
-  "_id": "category_id",
-  "name": "New Electronics Name",
-  "parent": null,
-  "isActive": false
-}
-\`\`\`
-
-### Delete a Category by ID
-
-- **HTTP Method**: DELETE
-- **Endpoint**: \`/api/categories/:id\`
-- **Response Payload (Success)**:
-
-No content (HTTP Status Code: 204)
-
-## Payload Examples
-
-These are examples of the data that you would send in requests and receive in responses when using the API.
-
-## Setting Up
-
-1. Clone this repository to your local machine.
-2. Navigate to the project directory in your terminal.
-3. Install dependencies by running \`npm install\`.
-4. Set up your MongoDB connection by replacing the connection URL in \`app.ts\`:
-
-\`\`\`javascript
-mongoose
-  .connect('mongodb://localhost:27017/your_database', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  })
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-  });
-\`\`\`
-
-Replace \`'mongodb://localhost:27017/your_database'\` with your actual MongoDB connection URL.
-
-## Running the Application
-
-1. Start the application by running \`npm run dev\` in your terminal.
-2. The server will be running on \`http://localhost:4000\` by default.
-
-That's it! You can now use the provided endpoints to manage your categories with nested levels using this REST API.
-
-
+1.  Sign up for an account on [Render](https://render.com/) if you don't have one.
+    
+2.  Create a new web service on Render:
+    
+    -   Connect your GitHub repository to Render.
+    -   Configure the build settings. You may need to specify a build command and a start command based on your project's configuration.
+    -   Set up environment variables if necessary.
+3.  Deploy your application.
+    
+4.  Once the deployment is successful, Render will provide you with a live URL where your API is hosted.
+   
+## Md Shakil Ahmed
