@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import swaggerDocs from './src/utils/swagger';
 const app = express();
 const createError = require('http-errors')
 const cors = require('cors')
@@ -7,7 +8,6 @@ const config = require('config');
 const { connectToDatabase } = require('./src/services/database')
 require('dotenv').config()
 
-const swaggerDocs = require('./src/utils/swagger')
 const { setupRoutes } = require('./src/routes')
 
 const port = config.get('SERVER_PORT')
@@ -26,7 +26,7 @@ const bootstrapApp = async () => {
         await setupRoutes(app);
 
         app.get('/', (req: Request, res: Response) => {
-            res.send(`Server Running...`)
+            res.redirect('/api/docs')
         })
 
         // Client Error Handling

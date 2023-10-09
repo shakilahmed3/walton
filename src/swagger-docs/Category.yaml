@@ -1,43 +1,122 @@
-components:
-  responses:
-    OK:
-      description: Request successful
-    Created:
-      description: Resource created successfully
-    BadRequest:
-      description: Bad request - the request is invalid
-    Unauthorized:
-      description: Unauthorized - authentication required
-    Forbidden:
-      description: Forbidden - authenticated user does not have permission
-    NotFound:
-      description: Not found - resource not found
-    Conflict:
-      description: Conflict - resource state conflicts with request
-    InternalServerError:
-      description: Internal server error - something went wrong on the server
 paths:
-  /Category:
+  /categories:
     get:
       tags:
-        - Category
-      summary: Category
-      security:
-        - bearerAuth: []
+        - Categories
+      summary: Get all categories.
+      description: Returns a list of all categories.
       responses:
-        200:
-          $ref: "#/components/responses/OK"
-        201:
-          $ref: "#/components/responses/Created"
-        400:
-          $ref: "#/components/responses/BadRequest"
-        401:
-          $ref: "#/components/responses/Unauthorized"
-        403:
-          $ref: "#/components/responses/Forbidden"
-        404:
-          $ref: "#/components/responses/NotFound"
-        409:
-          $ref: "#/components/responses/Conflict"
-        500:
-          $ref: "#/components/responses/InternalServerError"
+        '200':
+          description: Successful response with a list of categories.
+        '500':
+          description: Internal server error.
+    post:
+      tags:
+        - Categories
+      summary: Create a new category.
+      description: Create a new category.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Category name (required).
+                parentId:
+                  type: string
+                  description: Parent category ID (optional).
+      responses:
+        '201':
+          description: Category created successfully.
+        '400':
+          description: Bad request. Invalid input data.
+        '409':
+          description: Conflict. Category already exists.
+  /categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Retrieve a category by ID.
+      description: Retrieve a category by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Category ID.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with the category details.
+        '404':
+          description: Category not found.
+    put:
+      tags:
+        - Categories
+      summary: Update a category by ID.
+      description: Update a category by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Category ID.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Updated category name (optional).
+                isActive:
+                  type: boolean
+                  description: Updated category status (optional).
+      responses:
+        '200':
+          description: Category updated successfully.
+        '400':
+          description: Bad request. Invalid input data.
+        '404':
+          description: Category not found.
+    delete:
+      tags:
+        - Categories
+      summary: Deactivate a category by ID.
+      description: Deactivate a category by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Category ID.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category deactivated successfully.
+        '404':
+          description: Category not found.
+  /categories/search/{name}:
+    get:
+      tags:
+        - Categories
+      summary: Search for a category by name.
+      description: Search for a category by its name.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Category name to search for.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with the category details.
+        '404':
+          description: Category not found.
