@@ -2,19 +2,65 @@
 import { NextFunction, Request, Response } from 'express';
 import Category from '../models/Category';
 import Joi from 'joi';
+import redisClient from '../../redis';
 const createError = require('http-errors')
 
-//get all category
+async function getAllChild(categoryId: string): Promise<any[]> {
+    const childCategories = await Category.find({ parent: categoryId });
+    const childCategoryObjects: any[] = [];
+
+    for (const child of childCategories) {
+        const nestedCategories = await getAllChild(child._id);
+        childCategoryObjects.push({
+            ...child.toObject(),
+            children: nestedCategories
+        });
+    }
+    return childCategoryObjects;
+}
+
+
+
 export const getAllCategory = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const categories = await Category.find().exec()
-        res.status(200).json({
-            success: true,
-            data: categories,
-            message: "Successfully"
-        });
+        const allCategoriesKey = "all_categories"
+
+        // Check if the data is already cached in Redis
+        const cachedData = await redisClient.get(allCategoriesKey);
+
+        if (cachedData) {
+            // If cached data exists, return it
+            const categories = JSON.parse(cachedData);
+            res.status(200).json({
+                success: true,
+                data: categories,
+                message: "Successfully fetched from cache"
+            });
+        } else {
+            // If data is not cached, fetch it from the database
+            const rootCategories = await Category.find({ parent: null }).exec();
+
+            const formattedCategories: any[] = [];
+
+            for (const category of rootCategories) {
+                const childCategoryObjects = await getAllChild(category._id);
+                formattedCategories.push({
+                    ...category.toObject(),
+                    children: childCategoryObjects
+                });
+            }
+
+            // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
+            await redisClient.set(allCategoriesKey, JSON.stringify(formattedCategories), { 'EX': 3600 });
+
+            res.status(200).json({
+                success: true,
+                data: formattedCategories,
+                message: "Successfully fetched from the database and cached"
+            });
+        }
     } catch (error) {
-        return next(createError(error))
+        return next(createError(error));
     }
 }
 
@@ -52,6 +98,8 @@ export const createCategory = async (req: Request, res: Response, next: NextFunc
 
         await category.save();
 
+        await redisClient.flushAll()
+
         res.status(201).json({
             success: true,
             data: category,
@@ -65,22 +113,52 @@ export const createCategory = async (req: Request, res: Response, next: NextFunc
 // Retrieve a category by ID
 export const getCategoryById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const categoryId = req.params.id;
-        const category = await Category.findById(categoryId);
 
-        if (!category) {
-            return next(createError(404, "Category not found"))
+        const categoryId = req.params.id;
+        const cashKey = `categories${categoryId}`
+
+        const cachedData = await redisClient.get(cashKey);
+
+        if (cachedData) {
+            // If cached data exists, return it
+            const categories = JSON.parse(cachedData);
+            res.status(200).json({
+                success: true,
+                data: categories,
+                message: "Successfully retrieved category with children from cache"
+            });
+        } else {
+            const category = await Category.findById(
+                categoryId
+            );
+
+            if (!category) {
+                return next(createError(404, "Category not found"));
+            }
+
+            const childCategory = await getAllChild(categoryId);
+
+            // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
+            const categoriesData = {
+                category,
+                childCategory
+            }
+
+            await redisClient.set(cashKey, JSON.stringify(categoriesData), { 'EX': 3600 });
+
+            res.status(200).json({
+                success: true,
+                data: categoriesData,
+                message: "Successfully retrieved category with children",
+            });
         }
 
-        res.status(200).json({
-            success: true,
-            data: category,
-            message: "Successfully"
-        });
     } catch (error) {
-        return next(createError(error))
+        return next(createError(error));
     }
 };
+
+
 
 // Update a category by ID
 export const updateCategoryById = async (req: Request, res: Response, next: NextFunction) => {
@@ -115,9 +193,16 @@ export const updateCategoryById = async (req: Request, res: Response, next: Next
             return next(createError(404, "Category not found"))
         }
 
+        const childCategory = await getAllChild(categoryId);
+
+        await redisClient.flushAll()
+
         res.status(200).json({
             success: true,
-            data: category,
+            data: {
+                category,
+                childCategory
+            },
             message: "Categories update successfully"
 
         });
@@ -159,104 +244,54 @@ export const searchCategory = async (req: Request, res: Response, next: NextFunc
     try {
         const categoryName = req.params.name;
 
-        const foundCategory = await Category.findOne({ name: categoryName, isActive: true });
+        const searchCategoriesKey = `search_categories${categoryName}`
 
-        if (!foundCategory) {
-            return res.status(404).json({ error: 'Category not found' });
-        }
+        // Check if the data is already cached in Redis
+        const cachedData = await redisClient.get(searchCategoriesKey);
 
-        let parentCategory = null;
+        if (cachedData) {
+            // If cached data exists, return it
+            const categories = JSON.parse(cachedData);
+            res.status(200).json({
+                success: true,
+                data: categories,
+                message: "Successfully search complete from cache"
+            });
+        } else {
 
-        if (foundCategory.parent) {
-            parentCategory = await Category.findOne({ _id: foundCategory.parent, isActive: true });
-        }
+            const foundCategory = await Category.findOne({ name: categoryName, isActive: true });
 
-        res.status(200).json({
-            success: true,
-            message: "Successfully search complete",
-            data: {
+            if (!foundCategory) {
+                return res.status(404).json({ error: 'Category not found' });
+            }
+
+            let parentCategory = null;
+
+            if (foundCategory.parent) {
+                parentCategory = await Category.findOne({ _id: foundCategory.parent, isActive: true });
+            }
+
+            const categoriesData = {
                 _id: foundCategory._id,
                 name: foundCategory.name,
                 parent: parentCategory,
                 isActive: foundCategory.isActive,
-            },
-        });
+            }
+
+            // Store the fetched data in Redis with an expiration time (e.g., 1 hour)
+            await redisClient.set(searchCategoriesKey, JSON.stringify(categoriesData), { 'EX': 3600 });
+
+            res.status(200).json({
+                success: true,
+                message: "Successfully search complete",
+                data: categoriesData,
+            });
+
+        }
+
+
+
     } catch (error) {
         return next(createError(error))
     }
 };
-
-
-export const getAllChildCategories = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const categoryId = req.params.id;
-        const childCategories = await getAllChildCategoriesRecursive(categoryId);
-
-        res.status(200).json({
-            success: true,
-            data: childCategories,
-            message: "Successfully retrieved all child categories",
-        });
-    } catch (error) {
-        return next(error);
-    }
-};
-
-async function getAllChildCategoriesRecursive(categoryId: any): Promise<any[]> {
-    const childCategories = await Category.find({ parent: categoryId });
-
-    if (childCategories.length === 0) {
-        return [];
-    }
-
-    let allChildCategories: any[] = [];
-
-    for (const child of childCategories) {
-        allChildCategories.push(child);
-        const nestedChildCategories = await getAllChildCategoriesRecursive(child._id);
-        allChildCategories = allChildCategories.concat(nestedChildCategories);
-    }
-
-    return allChildCategories;
-}
-
-
-
-// for up to 4 level categories nesting
-// export const createCategory = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         // ... (other validation and checks)
-
-//         const parentCategory = parentId
-//             ? await Category.findById(parentId)
-//             : null;
-
-//         if (parentCategory) {
-//             // Check the nesting level of the parent category
-//             const parentNestingLevel = parentCategory.nestingLevel || 0;
-
-//             if (parentNestingLevel >= 4) {
-//                 return next(createError(400, 'Cannot nest categories beyond 4 levels.'));
-//             }
-//         }
-
-//         // Calculate the nesting level for the new category
-//         const nestingLevel = parentCategory ? parentNestingLevel + 1 : 0;
-
-//         const category = new Category({
-//             name,
-//             parent: parentId || null,
-//             nestingLevel,
-//         });
-
-//         await category.save();
-
-//         res.status(201).json({
-//             success: true,
-//             data: category,
-//             message: "Create categories successfully"
-//         });
-//     } catch (error) {
-//         return next(createError(error))
-//     }
-// };

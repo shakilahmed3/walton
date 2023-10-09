@@ -2,7 +2,6 @@ import {
     createCategory,
     deactivateCategoryById,
     getAllCategory,
-    getAllChildCategories,
     getCategoryById,
     searchCategory,
     updateCategoryById
@@ -22,7 +21,6 @@ router.put('/:id', updateCategoryById);
 // Delete a category by ID
 router.delete('/:id', deactivateCategoryById);
 router.get('/search/:name', searchCategory);
-router.get('/:id/children', getAllChildCategories);
 
 
 

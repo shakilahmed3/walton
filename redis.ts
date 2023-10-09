@@ -1,15 +1,29 @@
-// redis.js
-const redis = require('redis');
-const config = require('config');
+import { createClient } from 'redis';
 
-const redisClient = redis.createClient({
-  url: config.get('REDIS_URL')
-});
+const redisOptions = {
+    url: process.env.REDIS_URL,
+};
 
-redisClient.on('error', (err: any) => {
-  console.error('Error connecting to Redis:', err);
-});
+const redisClient = createClient(redisOptions);
 
-redisClient.on('connect', () => console.log('Connected to Redis!'));
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+async function initializeRedis() {
+    await new Promise<void>((resolve, reject) => {
+        redisClient.once('ready', () => {
+            console.log('Connected to Redis');
+            resolve();
+        });
+
+        redisClient.once('error', (err) => {
+            console.error('Error connecting to Redis:', err);
+            reject(err);
+        });
+    });
+}
+
+initializeRedis();
+
+redisClient.connect()
 
 export default redisClient;
